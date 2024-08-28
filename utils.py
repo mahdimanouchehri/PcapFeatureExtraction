@@ -1,8 +1,6 @@
 import uuid
 from itertools import islice, zip_longest
-
-import numpy
-
+import math
 
 def grouper(iterable, n, max_groups=0, fillvalue=None):
     """Collect data into fixed-length chunks or blocks"""
@@ -26,8 +24,13 @@ def get_statistics(alist: list):
         iat["total"] = sum(alist)
         iat["max"] = max(alist)
         iat["min"] = min(alist)
-        iat["mean"] = numpy.mean(alist)
-        iat["std"] = numpy.sqrt(numpy.var(alist))
+        #iat["mean"] = numpy.mean(alist)
+
+        mean_value = sum(alist) / len(alist)
+        variance = sum((x - mean_value) ** 2 for x in alist) / len(alist)
+        std_dev = math.sqrt(variance)
+        iat["mean"] = mean_value
+        iat["std"] = std_dev
     else:
         iat["total"] = 0
         iat["max"] = 0
