@@ -1,20 +1,20 @@
 import argparse
-
-
-
+from flow_session import FlowSession
+from csvcreator import csv_creator
+from tqdm import tqdm
 
 def argument_parser():
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description='PE malware classification with xgboost.')
+    parser = argparse.ArgumentParser(description='PE malware feature extraction.')
 
-    parser.add_argument('--input_path', required=False, default="2013-11-15-Gondad-EK-traffic.pcap",
+    parser.add_argument('--input_path', required=False, default="data/2013-11-15-Gondad-EK-traffic.pcap",
                         help='add your pcap file path.')
     parser.add_argument('--output_folder', required=False, default="pcap_result",
                         help='add your output folder path.')
 
 
-     parser.add_argument('--output_name', required=False, default="pcap_result",
-                        help='add your output name.')                   
+    parser.add_argument('--output_name', required=False, default="pcap_result.csv",
+                        help='add your output name.')
 
     return parser
 
@@ -22,119 +22,29 @@ def argument_parser():
 
 
 def main():
+    # Get the argument parser object
+    args = argument_parser().parse_args()
 
-  # Get the argument parser object
-  args = argument_parser().parse_args()
+    if not args.output_name.split(".")[-1] == "csv":
+        raise Exception("output_name must be .csv")
 
+    input_path = args.input_path
+    flows = FlowSession(input_path)
+    print("*** start create flows ***")
+    flows.create_flows()
+    flow_result = flows.get_flows()
+    flow_list = [i for i in flow_result]
 
-  input_path = args.input_path
-  output_folder = args.output_folder
-  output_name = args.output_folder
+    data_list=[]
 
+    print("*** start extract features from flows ***")
+    for i in tqdm(range(len(flow_list))):
+        data = flow_list[i].get_data()
+        data_list.append(data)
 
-  print(input_path, output_folder, output_name)
-
+    csv_creator(data_list, args.output_folder, args.output_name)
 
 if __name__ == "__main__":
     main()
 
 
-
-# from scapy.sendrecv import AsyncSniffer
-
-# from .flow_session import generate_session_class
-
-
-# def create_sniffer(
-#     input_file, input_interface, output_mode, output_file, url_model=None
-# ):
-#     assert (input_file is None) ^ (input_interface is None)
-
-#     NewFlowSession = generate_session_class(output_mode, output_file, url_model)
-
-#     if input_file is not None:
-#         return AsyncSniffer(
-#             offline=input_file,
-#             filter="ip and (tcp or udp)",
-#             prn=None,
-#             session=NewFlowSession,
-#             store=False,
-#         )
-#     else:
-#         return AsyncSniffer(
-#             iface=input_interface,
-#             filter="ip and (tcp or udp)",
-#             prn=None,
-#             session=NewFlowSession,
-#             store=False,
-#         )
-
-
-# def main():
-#     parser = argparse.ArgumentParser()
-
-
-
-#     input_group = parser.add_mutually_exclusive_group(required=True)
-#     input_group.add_argument(
-#         "-i",
-#         "--interface",
-#         action="store",
-#         dest="input_interface",
-#         help="capture online data from INPUT_INTERFACE",
-#     )
-
-#     input_group.add_argument(
-#         "-f",
-#         "--file",
-#         action="store",
-#         dest="input_file",
-#         help="capture offline data from INPUT_FILE",
-#     )
-
-#     output_group = parser.add_mutually_exclusive_group(required=False)
-#     output_group.add_argument(
-#         "-c",
-#         "--csv",
-#         "--flow",
-#         action="store_const",
-#         const="flow",
-#         dest="output_mode",
-#         help="output flows as csv",
-#     )
-
-#     url_model = parser.add_mutually_exclusive_group(required=False)
-#     url_model.add_argument(
-#         "-u",
-#         "--url",
-#         action="store",
-#         dest="url_model",
-#         help="URL endpoint for send to Machine Learning Model. e.g http://0.0.0.0:80/prediction",
-#     )
-
-#     parser.add_argument(
-#         "output",
-#         help="output file name (in flow mode) or directory (in sequence mode)",
-#     )
-
-#     args = parser.parse_args()
-
-#     sniffer = create_sniffer(
-#         args.input_file,
-#         args.input_interface,
-#         args.output_mode,
-#         args.output,
-#         args.url_model,
-#     )
-#     sniffer.start()
-
-#     try:
-#         sniffer.join()
-#     except KeyboardInterrupt:
-#         sniffer.stop()
-#     finally:
-#         sniffer.join()
-
-
-# if __name__ == "__main__":
-#     main()
