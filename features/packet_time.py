@@ -67,8 +67,11 @@ class PacketTime:
             String of Date and time.
 
         """
-        time = self.flow.packets[0][0].time
-        date_time = datetime.fromtimestamp(time).strftime("%Y-%m-%d %H:%M:%S")
+        #time = self.flow.packets[0][0].time
+        #date_time = datetime.fromtimestamp(time).strftime("%Y-%m-%d %H:%M:%S")
+        time = "{:.6f}".format(self.flow.packets[0][0].time)
+        date_time = datetime.fromtimestamp(float(time)).strftime("%Y-%m-%d %H:%M:%S")
+
         return date_time
 
     def get_duration(self):
